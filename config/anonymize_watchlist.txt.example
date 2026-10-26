@@ -1,0 +1,28 @@
+# 匿名化自查清单模板
+#
+# 用法：
+#   1) 复制本文件为同目录下的 anonymize_watchlist.txt
+#        copy config\anonymize_watchlist.txt.example config\anonymize_watchlist.txt
+#   2) 在副本中逐行写入需要自查的词，每行一个
+#   3) 运行：python scripts/check_anonymize.py
+#
+# 重要：anonymize_watchlist.txt 已被 .gitignore 忽略，不会进入版本库。
+#       请只把本模板（.example）提交上去，不要提交填了真实信息的副本。
+#
+# 需要写入的内容（依据大赛章程第四十四条）：
+#   - 参赛人员姓名（本人与队友）
+#   - 指导教师姓名
+#   - 参赛学校名称、简称、英文名、学院名
+#   - 学号、工号
+#   - 团队名、实验室名、社团名
+#   - 个人邮箱、GitHub/Gitee 账号、个人主页地址
+#
+# 以 # 开头的行是注释，会被忽略。
+
+# ---- 示例（请删除示例后填入真实内容）----
+# 张三
+# 李四
+# 示例大学
+# 示例大学计算机学院
+# 2022012345
+# zhangsan@example.edu.cn

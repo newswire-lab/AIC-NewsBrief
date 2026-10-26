@@ -1,0 +1,64 @@
+# 生成后端配置（A3：本地开源模型为主 + 在线开源模型 API 可切换）
+#
+# 为什么要有这一层：
+#   「AI+开源」赛题要求开源资源对核心功能起**关键**作用，
+#   且明文禁止"仅调用通用模型接口"。因此本项目：
+#   - 默认走**本地部署的开源模型权重**（从魔搭下载，可离线演示）
+#   - 同时保留在线 API 通道（同样调用开源模型），便于低配机器与快速验证
+#   - 两条通道都由本文件切换，不写死在代码里
+
+backend: local          # local = 本地开源模型权重；api = 在线开源模型服务
+
+local:
+  # 魔搭 ModelScope 上的模型 id（也可换成 HuggingFace id，走 hf-mirror）
+  model_id: Qwen/Qwen2.5-3B-Instruct
+  # 权重目录（相对于仓库根）。注意：模型权重不入版本库，见 .gitignore
+  model_dir: models/Qwen2.5-3B-Instruct
+  device_map: auto      # auto / cuda:0 / cpu
+  dtype: auto           # auto / bfloat16 / float16 / float32
+  # 3B 的 bf16 权重约 5.8GB，8GB 显存预填充长材料时容易 OOM；
+  # 4-bit（NF4）后约 2GB，显存余量充足。加载失败会自动回退到全精度。
+  load_in_4bit: true
+  max_context: 8192
+  # 300 字中文简报 + JSON 结构大约需要 700~900 token，留足余量避免被截断
+  max_new_tokens: 1200
+  temperature: 0.3
+  do_sample: true
+
+api:
+  # 任意 OpenAI 兼容端点均可：硅基流动 / 阿里百炼 / DeepSeek / 本地 vLLM 等
+  # 实测这些端点的网络在本机可达（返回 401 表示未认证，即网络通畅）
+  base_url: https://api.siliconflow.cn/v1
+  model: Qwen/Qwen2.5-7B-Instruct
+  # 密钥只从环境变量读取，绝不写入仓库
+  # （赛题规则明确：不得提交 API 密钥等访问凭据）
+  api_key_env: NEWSBRIEF_API_KEY
+  timeout: 90
+
+# 生成任务的统一参数
+task:
+  # 单条简报的**字数上限**（不是固定目标）。
+  # 实际目标 = 素材事实字数 × 0.34，再被这个值封顶、被 60 字兜底：
+  #   素材 300 字 -> 目标 102 字（精炼）
+  #   素材 1000 字 -> 目标 340 字
+  #   素材 2000 字 -> 目标 680 字
+  #   素材 3000+ 字 -> 封顶 700 字
+  # 这样「原文内容丰富、简报就多写；内容少就精炼」。详见 src/brief.py。
+  brief_chars: 700
+  # 长度校验容差（±25%）：300 字 → 接受 225~375 字。
+  # 早期版本固定 ±60%（接受 120~480 字），宽到形同虚设。
+  brief_chars_tolerance: 0.25
+  brief_paragraphs: 3            # 简报分段数（提示词约定）
+  # 标题与价值点不设硬上限：0 = 不限制。
+  # 实测 20 字会把「四川省华蓥市人大常委会原党组书记、主任刘」这类正常标题
+  # 砍成半句（表现为「标题说一半就停了」）。护栏见 src/brief.py 的 HEADLINE_SOFT_MAX。
+  headline_chars: 0
+  value_point_chars: 0
+  # 送入模型的正文最大字符数（超出则按段落截断，控制显存与成本）
+  max_source_chars: 6000
+  # 事实一致性校验阈值（见 src/verify.py）
+  # 长度判据只拦「太短」与「太长」，不追求贴着目标字数（见 src/verify.py）。
+  brief_min_ratio: 0.30        # 硬下限（另设 120 字绝对下限）
+  brief_max_ratio: 1.60        # 硬上限，防跑飞/凑字数
+  verify_min_coverage: 0.75        # 单句加权关键词覆盖率下限
+  verify_min_supported_ratio: 0.80 # 达标句子占比下限，低于此值自动降级为抽取式

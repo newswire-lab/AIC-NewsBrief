@@ -1,0 +1,56 @@
+# 数据与运行产物：一律不入库
+#
+# 重要（合规）：新闻原文的著作权属于原媒体。本项目遵守"仅本地存档用于生成摘要、
+# 不分发原文"的原则，因此数据库与日志目录不进入版本库。
+data/
+logs/
+*.db
+*.db-wal
+*.db-shm
+
+# 主办方材料：赛题通知与规则附件是大赛组委会的作品，
+# 团队无权再分发，因此仅本地留存用于对照，不进入版本库。
+# 依据：赛题规则「开放成果仅限团队依法有权公开和再分发的内容」。
+docs/rules/
+
+# 匿名化自查清单：包含真实姓名/学校，禁止提交
+# 仓库中只保留 .example 模板
+config/anonymize_watchlist.txt
+
+# 开源模型权重：体积大（GB 级），且应按模型自身许可证单独获取，不随仓库分发
+models/
+
+# 内部文档：进度交接含自评分数、赛题策略推演与内部排期，不适合对外公开
+docs/进度交接.md
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.eggs/
+build/
+dist/
+.venv/
+venv/
+env/
+ENV/
+
+# 测试与覆盖率
+.pytest_cache/
+.coverage
+htmlcov/
+
+# 编辑器与系统
+.vscode/
+.idea/
+*.swp
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# 临时产物
+*.tmp
+*.bak
+*.orig
+*.log

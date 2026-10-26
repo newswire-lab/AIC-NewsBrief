@@ -1,0 +1,530 @@
+# AIC-NewsBrief 数据源配置
+#
+# 本文件中的 enabled 状态全部基于 2026-09-24 在本机的实测结果
+# （health 体检 + 24 个候选 URL 探测），不是猜测。详见 docs/技术报告.md。
+#
+# 字段说明：
+#   id        唯一标识，命令行 -s 用它
+#   name      展示名，会写进简报的来源标注
+#   region    cn = 中国大陆 / intl = 境外
+#   lang      zh / en
+#   tier     1 = 官方权威（国防部、中国军网、新华网等）
+#            2 = 主流媒体（人民网、中新网、Defense News 等）
+#            3 = 聚合索引（仅作兜底，可信度权重最低）
+#   kind      rss = RSS/Atom 订阅（D1 已实现）
+#            html = HTML 列表页（D3 之后实现，现统一 enabled: false）
+#   enabled   是否参与采集
+#   max_items 每个源单次最多取多少条（新华网/军网是历史全量 feed，
+#             必须限流，否则首轮会灌进几千条）
+#
+# 合规约定：
+#   仅采集公开发布内容；RSS 优先；遵守 robots.txt 与源站服务条款；
+#   不绕过反爬、不高频请求；仅本地存档用于生成摘要，不分发原文。
+
+sources:
+  # ================= 中国大陆 · 官方权威 =================
+
+  - id: cn81_rss
+    name: 中国军网
+    region: cn
+    lang: zh
+    tier: 1
+    kind: rss
+    enabled: true
+    max_items: 40
+    url: http://www.81.cn/rss.xml
+    note: 实测 n=2813，是历史全量 feed，必须靠 max_items 限流；军方最权威源
+
+  - id: xinhua_mil
+    name: 新华网军事
+    region: cn
+    lang: zh
+    tier: 1
+    kind: rss
+    enabled: true
+    max_items: 40
+    url: http://www.xinhuanet.com/mil/news_mil.xml
+    note: 实测 n=300，旧版 RSS 仍可用
+
+  - id: xinhua_politics
+    name: 新华网时政
+    region: cn
+    lang: zh
+    tier: 1
+    kind: rss
+    enabled: true
+    max_items: 40
+    url: http://www.xinhuanet.com/politics/news_politics.xml
+    note: 实测 n=300
+
+  - id: xinhua_world
+    name: 新华网国际
+    region: cn
+    lang: zh
+    tier: 1
+    kind: rss
+    enabled: true
+    max_items: 40
+    url: http://www.xinhuanet.com/world/news_world.xml
+    note: 实测 n=300
+
+  - id: mod_gov_qwfb
+    name: 国防部·权威发布
+    region: cn
+    lang: zh
+    tier: 1
+    kind: html
+    enabled: true
+    max_items: 30
+    url: http://www.mod.gov.cn/gfbw/qwfb/index.html
+    note: 无可用 RSS（rss.xml 实测 404），改用通用 HTML 列表页抽取；官方发布口径，优先级最高
+
+  - id: mod_gov_jsxd
+    name: 国防部·军事行动
+    region: cn
+    lang: zh
+    tier: 1
+    kind: html
+    enabled: true
+    max_items: 30
+    url: http://www.mod.gov.cn/gfbw/jsxd/index.html
+    note: 官网首页是轮播图、日期只藏在图片路径里，故改用栏目页；此页日期以文本节点形式存在，可稳定抽取
+
+  # ================= 中国大陆 · 主流媒体 =================
+
+  - id: people_military
+    name: 人民网军事
+    region: cn
+    lang: zh
+    tier: 2
+    kind: rss
+    enabled: true
+    max_items: 40
+    url: http://www.people.com.cn/rss/military.xml
+    note: 实测 n=100
+
+  - id: people_politics
+    name: 人民网时政
+    region: cn
+    lang: zh
+    tier: 2
+    kind: rss
+    enabled: true
+    max_items: 40
+    url: http://www.people.com.cn/rss/politics.xml
+    note: 实测 n=100
+
+  - id: people_world
+    name: 人民网国际
+    region: cn
+    lang: zh
+    tier: 2
+    kind: rss
+    enabled: true
+    max_items: 40
+    url: http://www.people.com.cn/rss/world.xml
+    note: 实测 n=100
+
+  - id: chinanews_scroll
+    name: 中国新闻网滚动
+    region: cn
+    lang: zh
+    tier: 2
+    kind: rss
+    enabled: true
+    max_items: 30
+    url: https://www.chinanews.com.cn/rss/scroll-news.xml
+    note: 实测 n=30，更新快，适合做时效性兜底
+
+  - id: chinanews_china
+    name: 中国新闻网国内
+    region: cn
+    lang: zh
+    tier: 2
+    kind: rss
+    enabled: true
+    max_items: 30
+    url: https://www.chinanews.com.cn/rss/china.xml
+    note: 实测 n=30
+
+  - id: chinanews_world
+    name: 中国新闻网国际
+    region: cn
+    lang: zh
+    tier: 2
+    kind: rss
+    enabled: true
+    max_items: 30
+    url: https://www.chinanews.com.cn/rss/world.xml
+    note: 实测 n=30
+
+  # ================= 境外 · 军事垂直媒体 =================
+
+  - id: defensenews
+    name: Defense News
+    region: intl
+    lang: en
+    tier: 2
+    kind: rss
+    enabled: true
+    max_items: 25
+    url: https://www.defensenews.com/arc/outboundfeeds/rss/
+    note: 实测 n=25，直连可达
+
+  - id: armytimes
+    name: Army Times
+    region: intl
+    lang: en
+    tier: 2
+    kind: rss
+    enabled: true
+    max_items: 25
+    url: https://www.armytimes.com/arc/outboundfeeds/rss/
+    note: 实测 n=25
+
+  - id: militarytimes
+    name: Military Times
+    region: intl
+    lang: en
+    tier: 2
+    kind: rss
+    enabled: true
+    max_items: 25
+    url: https://www.militarytimes.com/arc/outboundfeeds/rss/
+    note: 实测 n=25
+
+  - id: navytimes
+    name: Navy Times
+    region: intl
+    lang: en
+    tier: 2
+    kind: rss
+    enabled: true
+    max_items: 25
+    url: https://www.navytimes.com/arc/outboundfeeds/rss/
+    note: 实测 n=25
+
+  - id: airforcetimes
+    name: Air Force Times
+    region: intl
+    lang: en
+    tier: 2
+    kind: rss
+    enabled: true
+    max_items: 25
+    url: https://www.airforcetimes.com/arc/outboundfeeds/rss/
+    note: 实测 n=10
+
+  - id: c4isrnet
+    name: C4ISRNET
+    region: intl
+    lang: en
+    tier: 2
+    kind: rss
+    enabled: true
+    max_items: 25
+    url: https://www.c4isrnet.com/arc/outboundfeeds/rss/
+    note: 实测 n=25，偏指挥控制/信息化方向
+
+  - id: defensescoop
+    name: DefenseScoop
+    region: intl
+    lang: en
+    tier: 2
+    kind: rss
+    enabled: true
+    max_items: 25
+    url: https://defensescoop.com/feed/
+    note: 实测 n=10
+
+  - id: defenseone
+    name: Defense One
+    region: intl
+    lang: en
+    tier: 2
+    kind: rss
+    enabled: true
+    max_items: 25
+    url: https://www.defenseone.com/rss/all/
+    note: 实测 n=20
+
+  - id: navalnews
+    name: Naval News
+    region: intl
+    lang: en
+    tier: 2
+    kind: rss
+    enabled: true
+    max_items: 25
+    url: https://www.navalnews.com/feed/
+    note: 实测 n=10
+
+  - id: taskandpurpose
+    name: Task & Purpose
+    region: intl
+    lang: en
+    tier: 2
+    kind: rss
+    enabled: true
+    max_items: 25
+    url: https://taskandpurpose.com/feed/
+    note: 实测 n=27
+
+  - id: defenseworld
+    name: Defense World
+    region: intl
+    lang: en
+    tier: 2
+    kind: rss
+    enabled: true
+    max_items: 30
+    url: https://www.defenseworld.net/feed
+    note: 实测 n=250，历史条数多，需限流
+
+  # ---- 境外独立机构（2026-09-24 批量探测后新增）----
+  # 目的：实测表明"跨机构印证"才是可信度模型的有效信号，
+  # 而原来源集中有 6 个站点同属一家集团，对印证度没有贡献。
+
+  - id: defenceblog
+    name: The Defence Blog
+    region: intl
+    lang: en
+    tier: 2
+    kind: rss
+    enabled: true
+    max_items: 15
+    url: https://defence-blog.com/feed/
+    note: 实测 n=10，独立机构
+
+  - id: defencetalk
+    name: DefenceTalk
+    region: intl
+    lang: en
+    tier: 2
+    kind: rss
+    enabled: true
+    max_items: 15
+    url: https://www.defencetalk.com/feed/
+    note: 实测 n=10，独立机构
+
+  - id: defensemirror
+    name: DefenseMirror
+    region: intl
+    lang: en
+    tier: 2
+    kind: rss
+    enabled: true
+    max_items: 20
+    url: https://www.defensemirror.com/rss
+    note: 实测 n=19，独立机构
+
+  - id: militaryleak
+    name: MilitaryLeak
+    region: intl
+    lang: en
+    tier: 3
+    kind: rss
+    enabled: true
+    max_items: 15
+    url: https://militaryleak.com/feed/
+    note: 实测 n=10，独立机构但多为二手转载，定为 tier3
+
+  # ================= 境外 · 通讯社 / 官媒 =================
+
+  - id: globaltimes
+    name: Global Times
+    region: intl
+    lang: en
+    tier: 2
+    kind: rss
+    enabled: true
+    max_items: 40
+    url: https://www.globaltimes.cn/rss/outbrain.xml
+    note: 实测 n=50，中国官媒英文版，可与境外源做视角对照
+
+  - id: tass
+    name: TASS
+    region: intl
+    lang: en
+    tier: 2
+    kind: rss
+    enabled: true
+    max_items: 40
+    url: https://tass.com/rss/v2.xml
+    note: 实测 n=100，需限流
+
+  # ================= 待实现：HTML 列表页（D3 之后） =================
+
+  - id: chinamil
+    name: 中国军网（旧站）
+    region: cn
+    lang: zh
+    tier: 1
+    kind: html
+    enabled: false
+    url: http://www.chinamil.com.cn/
+    note: 已有 cn81_rss 覆盖军网内容，此源仅作备份
+
+  - id: guancha
+    name: 观察者网
+    region: cn
+    lang: zh
+    tier: 2
+    kind: html
+    enabled: false
+    url: https://www.guancha.cn/
+    note: 无 RSS（/rss 返回 HTML），待 D3 抽取
+
+  - id: thepaper
+    name: 澎湃新闻
+    region: cn
+    lang: zh
+    tier: 2
+    kind: html
+    enabled: false
+    url: https://www.thepaper.cn/
+    note: 无公开 RSS，待 D3 抽取
+
+  # ================= 实测不可用（保留记录，便于日后复查） =================
+  # 以下源在 2026-09-24 本机环境实测失败，统一 enabled: false。
+  # 若换网络环境（如加代理）可重新体检启用。
+
+  - id: cctv_china
+    name: 央视网国内
+    region: cn
+    lang: zh
+    tier: 2
+    kind: rss
+    enabled: false
+    url: http://news.cctv.com/rss/china.xml
+    note: 实测 404，央视 RSS 已下线（index/news/world 均 404）
+
+  - id: chinanews_military
+    name: 中国新闻网军事
+    region: cn
+    lang: zh
+    tier: 2
+    kind: rss
+    enabled: false
+    url: https://www.chinanews.com.cn/rss/military.xml
+    note: 实测 404，该栏目无 RSS
+
+  - id: huanqiu_index
+    name: 环球网RSS索引
+    region: cn
+    lang: zh
+    tier: 3
+    kind: rss
+    enabled: false
+    url: https://rss.huanqiu.com/
+    note: 实测返回 HTML 索引页而非 feed
+
+  - id: bing_military
+    name: Bing新闻-军事
+    region: cn
+    lang: zh
+    tier: 3
+    kind: rss
+    enabled: false
+    url: https://cn.bing.com/news/search?q=%E5%86%9B%E4%BA%8B&format=RSS
+    note: 实测 200 但返回 HTML，Bing 已不再支持 format=RSS
+
+  - id: bing_defense
+    name: Bing新闻-国防
+    region: cn
+    lang: zh
+    tier: 3
+    kind: rss
+    enabled: false
+    url: https://cn.bing.com/news/search?q=%E5%9B%BD%E9%98%B2&format=RSS
+    note: 实测 200 但返回 HTML
+
+  - id: breakingdefense
+    name: Breaking Defense
+    region: intl
+    lang: en
+    tier: 2
+    kind: rss
+    enabled: false
+    url: https://breakingdefense.com/feed/
+    note: 实测 ConnectTimeout
+
+  - id: bbc_world
+    name: BBC World
+    region: intl
+    lang: en
+    tier: 2
+    kind: rss
+    enabled: false
+    url: https://feeds.bbci.co.uk/news/world/rss.xml
+    note: 实测 ConnectTimeout
+
+  - id: aljazeera
+    name: Al Jazeera
+    region: intl
+    lang: en
+    tier: 2
+    kind: rss
+    enabled: false
+    url: https://www.aljazeera.com/xml/rss/all.xml
+    note: 实测 ConnectionError
+
+  - id: dw_world
+    name: DW World
+    region: intl
+    lang: en
+    tier: 2
+    kind: rss
+    enabled: false
+    url: https://rss.dw.com/rdf/rss-en-world
+    note: 实测 ConnectTimeout
+
+  - id: reuters_world
+    name: Reuters World
+    region: intl
+    lang: en
+    tier: 2
+    kind: rss
+    enabled: false
+    url: https://feeds.reuters.com/reuters/worldNews
+    note: 实测 ConnectTimeout，且路透官方 RSS 服务已停止
+
+  - id: nationalinterest
+    name: The National Interest
+    region: intl
+    lang: en
+    tier: 2
+    kind: rss
+    enabled: false
+    url: https://nationalinterest.org/feed
+    note: 实测 ConnectTimeout
+
+  - id: warontherocks
+    name: War on the Rocks
+    region: intl
+    lang: en
+    tier: 2
+    kind: rss
+    enabled: false
+    url: https://warontherocks.com/feed/
+    note: 实测 ConnectTimeout
+
+  - id: stripes
+    name: Stars and Stripes
+    region: intl
+    lang: en
+    tier: 2
+    kind: rss
+    enabled: false
+    url: https://www.stripes.com/arc/outboundfeeds/rss/
+    note: 实测 ConnectTimeout
+
+  - id: janes
+    name: Janes
+    region: intl
+    lang: en
+    tier: 2
+    kind: rss
+    enabled: false
+    url: https://www.janes.com/feeds/news
+    note: 实测 ReadTimeout

@@ -1,0 +1,66 @@
+# 媒体机构（出版方）归属映射：source_id -> org
+#
+# 用途：可信度打分中的「交叉印证度」按**不同机构**计数，而不是按不同站点计数。
+#
+# 为什么必须这么做：
+#   实测发现 Army Times / Navy Times / Air Force Times / Military Times /
+#   Defense News / C4ISRNET 同属 Sightline Media Group，同一篇稿件会在这些站点
+#   同时出现。若按站点数计印证度，一个事件会被算成"5 家源印证"，
+#   但本质上是**一家机构的报道被重复计数**，会系统性高估可信度。
+#   因此本文件把站点归并到机构，印证度按机构去重。
+#
+# 未在此表中列出的 source_id，其 org 默认等于自身（视为独立机构）。
+
+orgs:
+  # ---------------- 中国大陆 ----------------
+  cn81_rss: 中国军网
+  chinamil: 中国军网
+  mod_gov_qwfb: 中国国防部
+  mod_gov_jsxd: 中国国防部
+  xinhua_mil: 新华社
+  xinhua_politics: 新华社
+  xinhua_world: 新华社
+  people_military: 人民日报社
+  people_politics: 人民日报社
+  people_world: 人民日报社
+  chinanews_scroll: 中国新闻社
+  chinanews_china: 中国新闻社
+  chinanews_world: 中国新闻社
+  chinanews_military: 中国新闻社
+  guancha: 观察者网
+  thepaper: 澎湃新闻
+  cctv_china: 中央广播电视总台
+  huanqiu_index: 环球时报社
+
+  # ---------------- 境外：Sightline Media Group ----------------
+  # 同一家出版集团，内部互转不计为独立印证
+  armytimes: 美国视线传媒集团
+  militarytimes: 美国视线传媒集团
+  navytimes: 美国视线传媒集团
+  airforcetimes: 美国视线传媒集团
+  defensenews: 美国视线传媒集团
+  c4isrnet: 美国视线传媒集团
+
+  # ---------------- 境外：独立机构 ----------------
+  defenseone: GovExec
+  defensescoop: Scoop News Group
+  taskandpurpose: Task & Purpose
+  navalnews: Naval News
+  defenseworld: Defense World
+  defenceblog: The Defence Blog
+  defencetalk: DefenceTalk
+  defensemirror: DefenseMirror
+  militaryleak: MilitaryLeak
+  globaltimes: 环球时报社
+  tass: 俄罗斯塔斯社
+  breakingdefense: Breaking Defense
+  janes: Janes
+  nationalinterest: 美国国家利益中心
+  warontherocks: War on the Rocks
+  stripes: Stars and Stripes
+  bbc_world: 英国广播公司
+  aljazeera: 半岛电视台
+  dw_world: 德国之声
+  reuters_world: 路透社
+  bing_military: 微软必应
+  bing_defense: 微软必应
