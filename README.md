@@ -7,7 +7,7 @@
 > 开源许可：MIT（见 `LICENSE`）
 > 开源与合规说明：见 `docs/开源说明.md`
 >
-> **开源仓库**：{{REPO_URL}}
+> **开源仓库**：https://github.com/whz20060720/AIC-NewsBrief
 > **演示视频**：[`docs/演示视频.mp4`](docs/演示视频.mp4)（4 分 05 秒，字幕已烧录在画面上）
 > **技术报告**：[`docs/技术报告.pdf`](docs/技术报告.pdf)（16 页）
 > **界面截图**：[`docs/screenshots/`](docs/screenshots/)
