@@ -121,7 +121,7 @@ def main() -> int:
             payload["sha"] = have
         st, res = api("PUT", url, token, payload)
         if st in (200, 201):
-            print("[✓] %-32s 已提交（%d 字节，%s）"
+            print("[[OK]] %-32s 已提交（%d 字节，%s）"
                   % (rel, len(data), "更新" if have else "新建"))
             changed += 1
         else:
@@ -173,7 +173,7 @@ def delete_files(paths: list[str]) -> int:
                    "sha": cur["sha"], "branch": BRANCH}
         st, res = api("DELETE", url, token, payload)
         if st == 200:
-            print("[✓] %-28s 已删除" % rel)
+            print("[[OK]] %-28s 已删除" % rel)
         else:
             print("[!] %-28s 删除失败 HTTP %s：%s" % (rel, st, res.get("error", "")))
             ok = False
@@ -230,10 +230,10 @@ def sync_tree(dry_run: bool = False) -> int:
         st, res = api("PUT", url, token, payload)
         if st in (200, 201):
             ok += 1
-            print("[%d/%d] ✓ %s" % (i, len(todo), rel))
+            print("[%d/%d] [OK] %s" % (i, len(todo), rel))
         else:
             bad += 1
-            print("[%d/%d] ✗ %s  HTTP %s %s" % (i, len(todo), rel, st, str(res.get("error", ""))[:120]))
+            print("[%d/%d] [X ] %s  HTTP %s %s" % (i, len(todo), rel, st, str(res.get("error", ""))[:120]))
 
     print("\n成功 %d / 失败 %d" % (ok, bad))
     return 0 if bad == 0 else 3
