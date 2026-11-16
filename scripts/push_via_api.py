@@ -197,7 +197,7 @@ def sync_tree(dry_run: bool = False) -> int:
     print("[i] 已认证为：%s" % me.get("login"))
 
     tree = api("GET", "https://api.github.com/repos/%s/%s/git/trees/%s?recursive=1"
-               % (OWNER, REPO, BRANCH))[1]
+               % (OWNER, REPO, BRANCH), token)[1]
     remote = {x["path"]: x["sha"] for x in tree.get("tree", []) if x["type"] == "blob"}
 
     todo = []
