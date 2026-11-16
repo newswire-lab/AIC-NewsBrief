@@ -39,7 +39,10 @@ TEXT_EXTS = {
     ".gitignore", ".csv", ".xml",
 }
 
-SKIP_DIRS = {"__pycache__", ".git", ".venv", "venv", "node_modules", ".pytest_cache"}
+# docs/rules/ 存放大赛官方通知原文（PDF 及提取文本），其中含组委会各赛题负责人
+# 的公开联系邮箱，属于赛事公开信息而非团队身份信息，故按目录名跳过。
+SKIP_DIRS = {"__pycache__", ".git", ".venv", "venv", "node_modules",
+             ".pytest_cache", "rules"}
 # dist/ 是构建产物目录（已在 .gitignore 中），里面只有 PDF 与中间 HTML；
 # 中间 HTML 里的图片被解析成了 file:// 绝对 URI，必然含本机用户名，
 # 但该文件本身不随作品分发，所以与 data/、logs/ 一样跳过。
