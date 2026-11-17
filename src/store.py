@@ -215,10 +215,17 @@ def recent_articles(
     region: Optional[str] = None,
     topic: Optional[str] = None,
 ) -> List[sqlite3.Row]:
-    sql = (
-        "SELECT * FROM articles WHERE datetime(COALESCE(published_at, fetched_at)) >= datetime('now', ?) "
-    )
-    params: List[Any] = [f"-{int(hours)} hours"]
+    # hours <= 0 表示「不限时窗」（对应界面「不限（全部历史）」）。
+    # 注意：早先这里无条件拼 `>= datetime('now', '-0 hours')`，而调用方又写成
+    # `hours or 168`，导致「不限」被静默降级成 7 天且文案仍显示「全部历史」。
+    if int(hours) > 0:
+        sql = (
+            "SELECT * FROM articles WHERE datetime(COALESCE(published_at, fetched_at)) >= datetime('now', ?) "
+        )
+        params: List[Any] = [f"-{int(hours)} hours"]
+    else:
+        sql = "SELECT * FROM articles WHERE 1=1 "
+        params: List[Any] = []
     if region:
         sql += "AND region = ? "
         params.append(region)
