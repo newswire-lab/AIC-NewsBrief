@@ -536,7 +536,7 @@ def ui_channel(channel: str, kw: str, hours: int, limit: int):
             "排序：标题命中 > 摘要 > 正文，再叠时效加成；同一通稿多站转发已折叠",
         ]
     else:
-        raw = store.recent_articles(conn, hours=int(hours or 168),
+        raw = store.recent_articles(conn, hours=int(hours or 0),
                                     limit=int(limit), topic=topic or None)
         for r in raw:
             title = channel_title(r["title"], r["title_zh"])
