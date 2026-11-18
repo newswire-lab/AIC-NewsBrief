@@ -1092,6 +1092,8 @@ def main() -> int:
                         help="数据陈旧阈值，单位小时（默认 24）；超过则启动后立即补采一轮")
     parser.add_argument("--no-prewarm", action="store_true",
                         help="不在后台预热模型权重（默认会预热，避免首次生成干等）")
+    parser.add_argument("--auth", default=None, metavar="USER:PASS",
+                        help="对外分享时加一层口令，例如 judge:abc123")
     args = parser.parse_args()
 
     config.ensure_dirs()
@@ -1119,9 +1121,17 @@ def main() -> int:
             print("[APP] 已在后台预热模型权重（首次生成无需再等加载）")
         except Exception as exc:                    # noqa: BLE001
             print(f"[APP] 预热未启动：{type(exc).__name__}: {exc}")
+    auth = None
+    if args.auth:
+        if ":" not in args.auth:
+            print("[APP] --auth 格式应为 USER:PASS，已忽略")
+        else:
+            u, p = args.auth.split(":", 1)
+            auth = (u, p)
+            print("[APP] 已开启访问口令（用户名 %s）" % u)
     try:
         demo.launch(server_name=args.host, server_port=args.port,
-                    share=args.share, show_error=True)
+                    share=args.share, auth=auth, show_error=True)
     finally:
         if _UPDATER is not None:
             _UPDATER.stop()
