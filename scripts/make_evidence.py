@@ -105,14 +105,14 @@ def build_md() -> str:
 
     # ---- 4 截图 ----
     parts.append("\n## 四、界面真机截图\n")
-    parts.append("截图取自本机运行 `python -m src.app` 的真实界面（非设计稿），"
+    parts.append("截图取自本机运行 `python -m src.app` 的真实界面（非设计稿，2026-11-18 拍摄），"
                  "存于仓库 `docs/screenshots/`。\n")
     shots = [
-        ("screenshots/1_hot_events.png", "热点事件：列表给出信息来源（独立机构）、首报时间、最新跟进与可信度"),
-        ("screenshots/2_evidence.png", "证据链：6 个站点只算 2 家独立机构，评分构成可逐项验算"),
-        ("screenshots/3_brief.png", "简报生成：模型直出通过校验（句级溯源 7/7），并标注未被支撑句"),
-        ("screenshots/4_status.png", "系统状态：源健康、自动更新与时间口径说明"),
-        ("screenshots/5_search.png", "检索：命中位置加权排序 + 同稿折叠"),
+        ("screenshots/1_hot_events.png", "热点事件：每个事件列出信息来源（独立机构）、机构数、篇数、首报与最新跟进时间，可信度实时计算"),
+        ("screenshots/2_evidence.png", "证据链：7 篇报道、2 个站点只算 1 家独立机构；评分构成 100×0.7×0.9886×0.6=41.52 可逐项验算"),
+        ("screenshots/3_brief.png", "简报生成：按机构数与时间窗筛选事件，生成后逐句给出依据来源"),
+        ("screenshots/4_status.png", "系统状态：采集周期、数据新鲜度与时间口径说明"),
+        ("screenshots/5_search.png", "检索：命中位置加权排序 + 同稿折叠，结果带可信度"),
     ]
     for rel, cap in shots:
         if (ROOT / "docs" / rel).exists():
