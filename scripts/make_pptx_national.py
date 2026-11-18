@@ -10,6 +10,12 @@
 评委拿着评分表逐项打分时对不上号。本脚本把版式改成六个分节，每页 kicker 直接
 标出「第几项 / 分值」，评委可以边听边在表上打勾。
 
+版式采用「双轨」：
+  1) 右上角四段导航（① 背景 ② 创新点 ③ 作品介绍 ④ 展望）——讲一条连贯的故事线；
+  2) 每页 kicker 仍标「第几项 / 分值」——保证页面顺序与评分表一致，不漏项。
+四段只是把相邻页「缝」成故事：页码顺序不变，评分项先后也就不变。
+每页标题写成承接上页的句式，正文上方再给一句过渡句（bridge），避免跳话题。
+
 时长预算：汇报 + 演示合计 4 分 50 秒（初赛要求 3~5 分钟，半决赛要求 ≤6 分钟，
 取交集）。每页备注里写死了口播词、单页秒数与累计时间，录制时照读即可。
 
@@ -83,19 +89,47 @@ def textbox(slide, left, top, width, height, lines, align=PP_ALIGN.LEFT,
     return box
 
 
-def slide_base(prs, title, kicker=None):
+PARTS = ["① 背景", "② 创新点", "③ 作品介绍", "④ 展望"]
+
+
+def part_strip(s, cur, dark=False):
+    """右上角四段导航，当前段高亮——让评委随时知道讲到第几部分。"""
+    box = s.shapes.add_textbox(Inches(7.10), Inches(0.30), Inches(5.50), Inches(0.32))
+    tf = box.text_frame
+    tf.word_wrap = False
+    p = tf.paragraphs[0]
+    p.alignment = PP_ALIGN.RIGHT
+    off = RGBColor(0x7A, 0x81, 0x89) if dark else RGBColor(0xB4, 0xBA, 0xC2)
+    sep = RGBColor(0x45, 0x4B, 0x52) if dark else RGBColor(0xDC, 0xE0, 0xE4)
+    for i, name in enumerate(PARTS):
+        r = p.add_run()
+        r.text = name
+        style(r, 12, i == cur, ACCENT if i == cur else off)
+        if i < len(PARTS) - 1:
+            r2 = p.add_run()
+            r2.text = "  ›  "
+            style(r2, 12, False, sep)
+    return box
+
+
+def slide_base(prs, title, kicker=None, part=None, bridge=None):
     s = prs.slides.add_slide(prs.slide_layouts[6])
     bar = s.shapes.add_shape(1, Emu(0), Emu(0), W, Inches(0.10))
     bar.fill.solid()
     bar.fill.fore_color.rgb = ACCENT
     bar.line.fill.background()
-    top = Inches(0.42)
+    if part is not None:
+        part_strip(s, part)
+    top = Inches(0.30)
     if kicker:
-        textbox(s, Inches(0.72), top, Inches(11.9), Inches(0.35),
-                [(kicker, 13, True, ACCENT)])
-        top = Inches(0.78)
-    textbox(s, Inches(0.72), top, Inches(11.9), Inches(0.8),
-            [(title, 28, True, INK)])
+        textbox(s, Inches(0.72), top, Inches(6.3), Inches(0.30),
+                [(kicker, 12, True, ACCENT)])
+        top = Inches(0.64)
+    textbox(s, Inches(0.72), top, Inches(11.9), Inches(0.62),
+            [(title, 26, True, INK)])
+    if bridge:
+        textbox(s, Inches(0.72), Inches(1.28), Inches(11.9), Inches(0.34),
+                [("↳  " + bridge, 14, False, GREY)])
     return s
 
 
@@ -195,11 +229,12 @@ def build(out_path: Path) -> Path:
     textbox(s, Inches(0.95), Inches(2.75), Inches(11.6), Inches(0.6),
             [("同一个事件，有几家独立机构在说？可信度多高？", 23, False, ACCENT)])
     line(s, Inches(0.95), Inches(3.55), Inches(2.2))
-    textbox(s, Inches(0.95), Inches(3.85), Inches(11.2), Inches(2.0), [
+    textbox(s, Inches(0.95), Inches(3.78), Inches(11.2), Inches(2.4), [
         ("第八届全球校园人工智能算法精英大赛 · 算法主题赛 · AI+开源", 18, False, soft),
         (f"团队名称：{TEAM}", 20, True, WHITE),
         ("开源仓库：github.com/newswire-lab/AIC-NewsBrief（MIT）", 18, False, soft),
-    ], spacing=1.5)
+        ("本次汇报四个部分：① 背景　→　② 创新点　→　③ 作品介绍　→　④ 展望", 16, False, ACCENT),
+    ], spacing=1.45)
     notes(s,
           "【0:00–0:20｜20 秒】\n"
           f"口播：「评委老师好，我们的团队名称是「{TEAM}」，作品是{PRODUCT}。\n"
@@ -207,7 +242,9 @@ def build(out_path: Path) -> Path:
           "要点：开场先报团队名称（通知要求），然后一句定位，不要念 PPT 标题。")
 
     # ========== 2 问题与场景价值（15 分）0:20–0:55，35s ==========
-    s = slide_base(prs, "问题：多源新闻的两个硬伤", "评分项 1/6 · 问题与场景价值（15 分）")
+    s = slide_base(prs, "问题：「多家报道」这件事，被系统性高估了",
+                   "① 背景 · 评分项 1/6 · 问题与场景价值（15 分）",
+                   part=0, bridge="从最基础的一句话说起：这条新闻，到底有几家在说。")
     bullets(s, [
         ("用户与场景：",
          "想核实一条新闻真伪的读者、内容审核人员与研究者；他们每天面对几百条互相转载的报道，"
@@ -228,7 +265,9 @@ def build(out_path: Path) -> Path:
           "这两点就是我们要解决的问题，也是评分的第一个打分项。")
 
     # ========== 3 方案流水线（创新 20 分）0:55–1:25，30s ==========
-    s = slide_base(prs, "方案：一条可校验的流水线", "评分项 2/6 · 创新性与方案设计（20 分）")
+    s = slide_base(prs, "一条能逐句校验的流水线",
+                   "② 创新点 · 评分项 2/6 · 创新性与方案设计（20 分）",
+                   part=1, bridge="问题清楚了，它怎么跑？")
     textbox(s, Inches(0.85), Inches(1.70), Inches(11.7), Inches(1.1), [
         ("采集 → 去重 → 事件聚类 → 剪枝 → 可信度 → 简报生成 → 事实校验 → 不过就降级",
          21, True, INK)], spacing=1.35)
@@ -241,13 +280,15 @@ def build(out_path: Path) -> Path:
     ], top=Inches(2.95), size=17)
     notes(s,
           "【0:55–1:25｜30 秒】\n"
-          "口播：方案是一条八步流水线。前面六步全部自研，只把「写」这一步交给开源模型，\n"
+          "口播：问题清楚了，它怎么跑？八步流水线：采集、去重、事件聚类、剪枝、可信度、简报生成、\n"
+          "逐句校验、不过就降级。前面六步全部自研，只把「写」这一步交给开源模型，\n"
           "最后一步是逐句校验，校验不过就不发，退回原文摘录。\n"
           "这样做的目的只有一个：产物里每一句话都能指回具体原文。")
 
     # ========== 4 四个自研创新点 1:25–2:03，38s ==========
-    s = slide_base(prs, "四个自研创新点（自主实现部分）",
-                   "评分项 2/6 · 创新性与方案设计（20 分）· 续")
+    s = slide_base(prs, "关键在这四处：每一处都堵上一步的漏洞",
+                   "② 创新点 · 评分项 2/6 · 创新性与方案设计（20 分）· 续",
+                   part=1, bridge="流水线搭起来了，哪几处是我们自己写的？")
     bullets(s, [
         ("① 事件聚类 + 剪枝：",
          "先按关键词倒排取候选对，只对候选对算相似度，实测比对量压到 2.65%，"
@@ -264,14 +305,15 @@ def build(out_path: Path) -> Path:
     ], size=17)
     notes(s,
           "【1:25–2:03｜38 秒】\n"
-          "口播：四个自研点里，第二个最容易被忽略但最影响结论——机构级去重。\n"
-          "防务新闻那五家其实是同一个出版集团，页面互转，如果按站点数算，一个事件会被虚报成 6 家印证。\n"
-          "我们按机构算，只计 1 家。第四点是校验和降级：核不过就不硬发，退回原文摘录。\n"
+          "口播：四个自研点，我挑三处说。一是聚类加剪枝，只对可能重复的组合算相似度；\n"
+          "二是机构级去重，这条最影响结论——防务新闻那五家其实是同一个出版集团，\n"
+          "按站点算会被虚报成 6 家印证，按机构算只计 1 家。三是无词典新词发现。\n"
           "这两点合起来，才让「可信度」这个数字站得住。")
 
     # ========== 5 AI 与开源融合（20 分）2:03–2:38，35s ==========
-    s = slide_base(prs, "AI 与开源：边界清楚，许可合规",
-                   "评分项 3/6 · AI 与开源融合（20 分）")
+    s = slide_base(prs, "边界：AI 只负责「写」，其余全部自研",
+                   "② 创新点 · 评分项 3/6 · AI 与开源融合（20 分）",
+                   part=1, bridge="自己写的那几处说完了，开源模型用在哪？")
     add_table(s, [
         ["开源资源", "许可证", "在本作品中的作用"],
         ["Qwen2.5-3B-Instruct", "Apache-2.0",
@@ -295,8 +337,9 @@ def build(out_path: Path) -> Path:
           "许可方面：模型是 Apache-2.0，权重不分发，仓库里给下载脚本和 SHA256 校验。")
 
     # ========== 6 成品（实现 25 分）2:38–2:58，20s ==========
-    s = slide_base(prs, "成品：6 个页签，全部可点可查",
-                   "评分项 4/6 · 实现完成度与可验证效果（25 分）")
+    s = slide_base(prs, "成品：六个页签，全部可点可查",
+                   "③ 作品介绍 · 评分项 4/6 · 实现完成度与可验证效果（25 分）",
+                   part=2, bridge="三处不同说完了，看它实际的样子。")
     if (shot / "3_brief.png").exists():
         add_picture_fit(s, shot / "3_brief.png",
                         Inches(0.72), Inches(1.72), Inches(5.85), Inches(4.6))
@@ -308,17 +351,18 @@ def build(out_path: Path) -> Path:
          15, False, GREY)], spacing=1.2)
     notes(s,
           "【2:38–2:58｜20 秒】\n"
-          "口播：左边是简报生成页，先按机构数和时间窗筛出事件，生成后系统会把每一句的依据标出来；\n"
-          "右边是证据链，这个事件有 7 篇报道、来自 2 个站点，但只算 1 家独立机构，\n"
+          "口播：三处不同说完了，看它实际的样子。左边是简报生成，先按机构数和时间窗筛出事件，\n"
+          "生成后每一句都标出依据；右边是证据链，这个事件有 7 篇报道、来自 2 个站点，\n"
           "每条报道都能点回具体的原文。截图取自 2026-11-18 真机运行。\n"
           "界面一共 6 个页签，都可以现场操作。")
 
     # ========== 7 实测数据 2:58–3:28，30s ==========
-    s = slide_base(prs, "实测数据（全部可复现）",
-                   "评分项 4/6 · 实现完成度与可验证效果（25 分）· 续")
+    s = slide_base(prs, "效果：这些数字都能复现",
+                   "③ 作品介绍 · 评分项 4/6 · 实现完成度与可验证效果（25 分）· 续",
+                   part=2, bridge="界面能点，里面的数字经不经得起查？")
     add_table(s, [
         ["指标", "实测值"],
-        ["采集规模（2026-10-27 深夜）", "3,707 篇报道 / 2,551 个事件"],
+        ["采集规模（2026-10-27 深夜）", "3,707 篇 / 2,551 个事件（答辩当日已增至 4,298 / 3,038）"],
         ["剪枝后需比对的候选对", "2.65%（全量两两比对的占比）"],
         ["多机构印证", "18 / 2,551 = 0.7%；另有 234 个事件有 ≥2 站点但仅单机构"],
         ["简报带依据句比例", "7/7 = 100%（阈值 80%）"],
@@ -338,10 +382,11 @@ def build(out_path: Path) -> Path:
           "比如并列时按名称排序会让某个机构永远排前面，这是一个隐性偏见。")
 
     # ========== 8 开放成果（15 分）3:28–3:53，25s ==========
-    s = slide_base(prs, "开放成果与复用价值",
-                   "评分项 5/6 · 开放成果与复用价值（15 分）")
+    s = slide_base(prs, "开放：能拿走，也能复现",
+                   "③ 作品介绍 · 评分项 5/6 · 开放成果与复用价值（15 分）",
+                   part=2, bridge="数字站得住，放出来了什么？")
     bullets(s, [
-        ("已公开：", "GitHub 仓库 newswire-lab/AIC-NewsBrief，MIT 许可，106 个文件——"
+        ("已公开：", "GitHub 仓库 newswire-lab/AIC-NewsBrief，MIT 许可，110 个文件——"
                   "源码、技术报告、演示视频、真机截图、三轮对照实验原始输出全部在库内。"),
         ("可直接复用：", "parsers / dedup / similarity 三个模块纯标准库实现，可单独摘出来用于其他中文文本项目；"
                     "新词发现模块不依赖词典，可作为独立工具使用。"),
@@ -352,20 +397,22 @@ def build(out_path: Path) -> Path:
     ], size=17)
     notes(s,
           "【3:28–3:53｜25 秒】\n"
-          "口播：成果已经全部公开，MIT 许可，106 个文件，包括对照实验的原始输出，\n"
+          "口播：成果已经全部公开，MIT 许可，110 个文件，包括对照实验的原始输出，\n"
           "评审可以直接核对。\n"
           "复用上，解析、去重、相似度这三个模块是纯标准库实现，可以单独拿走用。\n"
           "维护上，配置都参数化了，后面会向上游项目提 Issue 和补丁。")
 
     # ========== 9 作品演示 3:53–4:23，30s ==========
     s = dark_slide(prs)
+    part_strip(s, 2, dark=True)
     textbox(s, Inches(1.0), Inches(2.35), Inches(11.3), Inches(1.0),
             [("作品演示（约 30 秒录屏）", 40, True, WHITE)], align=PP_ALIGN.CENTER)
     line(s, Inches(5.55), Inches(3.55), Inches(2.2))
-    textbox(s, Inches(1.0), Inches(3.85), Inches(11.3), Inches(1.8), [
+    textbox(s, Inches(1.0), Inches(3.82), Inches(11.3), Inches(2.0), [
+        ("↳  下面用三十秒看它跑一遍。", 16, False, soft),
         ("板块新闻 → 热点事件 → 证据链 → 简报生成", 21, False, ACCENT),
         ("录屏已嵌入本页，录制时直接播放，无需现场操作", 15, False, soft),
-    ], align=PP_ALIGN.CENTER, spacing=1.6)
+    ], align=PP_ALIGN.CENTER, spacing=1.5)
     notes(s,
           "【3:53–4:23｜30 秒】\n"
           "口播（播放前）：「下面用三十秒演示核心流程。」\n"
@@ -374,8 +421,9 @@ def build(out_path: Path) -> Path:
           "※ 正式录制前请把录屏插入本页（插入 → 视频 → 此设备），并设为自动播放。")
 
     # ========== 10 局限与后续（材料 5 分）4:23–4:50，27s ==========
-    s = slide_base(prs, "局限与后续计划（如实说明）",
-                   "评分项 6/6 · 材料规范与表达（5 分）")
+    s = slide_base(prs, "局限与后续：如实说明",
+                   "④ 展望 · 评分项 6/6 · 材料规范与表达（5 分）",
+                   part=3, bridge="讲完了做成了什么，再说还没做成的。")
     bullets(s, [
         ("局限一：", "跨机构印证的样本本身就小——0.7%，只够说明口径有效，不足以做统计结论。"),
         ("局限二：", "语料以英文防务类为主，中文源多为短摘要，模型直出通过率明显偏低。"),
